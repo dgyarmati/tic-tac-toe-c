@@ -7,11 +7,47 @@
 enum { NOUGHTS, CROSSES, BORDER, EMPTY };
 enum { HUMANWIN, COMPWIN, DRAW };
 
+// directions to search for three in a rows
+const int directions[4] = {1, 5, 4, 6};
+
 const int gameAreaIndices[9] = {
     6, 7, 8, 
     11, 12, 13, 
     16, 17, 18
 };
+
+int getNoOfSameSymbolsInADirection(int startSquareIdx, const int direction, const int *board, const int currentSymbol) {
+    int noOfSameSymbolsInARow = 0;
+
+    while (board[startSquareIdx] != BORDER) {
+        if (board[startSquareIdx] != currentSymbol) {
+            break;
+        }
+        noOfSameSymbolsInARow++;
+        startSquareIdx += direction;
+    }
+
+    return noOfSameSymbolsInARow;
+}
+
+int findThreeInARow(const int *board, const int currentSymbolIdx, const int currentSymbol) {
+    int direction = 0;
+    int threeCount = 0;
+
+    for (int i = 0; i < 4; i++) {
+        direction = directions[i];
+        threeCount += getNoOfSameSymbolsInADirection(currentSymbolIdx + direction, direction, board, currentSymbol);
+        threeCount += getNoOfSameSymbolsInADirection(currentSymbolIdx + direction * -1, direction * -1, board, currentSymbol);
+
+        if (threeCount == 3) {
+            break;
+        }
+
+        threeCount = 1;
+    }
+
+    return threeCount;
+}
 
 void initializeBoard(int *board) {
     int i = 0;
@@ -108,28 +144,36 @@ int hasEmptySquare(const int *board) {
 
 void run() {
     int gameOver = 0;
-    int currentPlayer = NOUGHTS;
-    int lastMoveMade = 0;
+    int currentPlayerSymbol = NOUGHTS;
+    int lastMove = 0;
     int board[25];
 
     initializeBoard(&board[0]);
     drawBoard(&board[0]);
 
     while (!gameOver) {
-        if (currentPlayer == NOUGHTS) {
+        if (currentPlayerSymbol == NOUGHTS) {
             int lastMove = getHumanPlayerMove(&board[0]);
-            makeMove(&board[0], lastMove, currentPlayer);
-            currentPlayer = CROSSES;
+            makeMove(&board[0], lastMove, currentPlayerSymbol);
+            currentPlayerSymbol = CROSSES;
         } else {
             int lastMove = getAIPlayerMove(&board[0]);
-            makeMove(&board[0], lastMove, currentPlayer);
-            currentPlayer = NOUGHTS;
+            makeMove(&board[0], lastMove, currentPlayerSymbol);
+            currentPlayerSymbol = NOUGHTS;
         }
         drawBoard(&board[0]);
 
-        // if three in a row exists, it's game over
+        int oppositePlayerSymbol = currentPlayerSymbol ^ 1;
+        if (findThreeInARow(board, lastMove, oppositePlayerSymbol) == 3) {
+            printf("Game over!\n");
+            gameOver = 1;
+            if (currentPlayerSymbol == NOUGHTS) {
+                printf("Computer wins!\n");
+            } else {
+                printf("Player wins!\n");
+            }
+        }
 
-        // if there are no more moves, there's a draw
         if (!hasEmptySquare(board)) {
             printf("Game over!\n");
             gameOver = 1;
@@ -137,6 +181,8 @@ void run() {
         }
 
     }
+
+    drawBoard(&board[0]);
 }
 
 int main() {
