@@ -37,7 +37,7 @@ void drawBoard(const int *board) {
     printf("\n");
 }
 
-int getHumanPlayerMoveIdx(const int *board) {
+int getHumanPlayerMove(const int *board) {
     char userInput[4];
 
     int moveConfirmed = 0;
@@ -80,28 +80,19 @@ int getHumanPlayerMoveIdx(const int *board) {
     return gameAreaIndices[direction];
 }
 
-void run() {
-    int gameOver = 0;
-    int currentPlayer = NOUGHTS;
-    int lastMoveMade = 0;
-    int board[25];
+int getAIPlayerMove(const int *board) {
+    int freeSquareIdx = 0;
+    int availableDirections[9];
+    int randDirection = 0;
 
-    initializeBoard(&board[0]);
-    drawBoard(&board[0]);
-
-    while (!gameOver) {
-        if (currentPlayer == NOUGHTS) {
-            getHumanPlayerMoveIdx(&board[0]);
-        } else {
-            drawBoard(&board[0]);
+    for (int i = 0; i < 9; i++) {
+        if (board[gameAreaIndices[i]] == EMPTY) {
+            availableDirections[freeSquareIdx++] = gameAreaIndices[i];
         }
-
-        // if three in a row exists, it's game over
-
-        // if there are no more moves, there's a draw
-
-        gameOver = 1; // TODO: remove
     }
+
+    randDirection = (rand() % freeSquareIdx);
+    return availableDirections[randDirection];    
 }
 
 void makeMove(int *board, const int square, const int currentPlayer) {
@@ -113,6 +104,39 @@ int hasEmptySquare(const int *board) {
         if (board[gameAreaIndices[i]] == EMPTY) return 1;
     }
     return 0;
+}
+
+void run() {
+    int gameOver = 0;
+    int currentPlayer = NOUGHTS;
+    int lastMoveMade = 0;
+    int board[25];
+
+    initializeBoard(&board[0]);
+    drawBoard(&board[0]);
+
+    while (!gameOver) {
+        if (currentPlayer == NOUGHTS) {
+            int lastMove = getHumanPlayerMove(&board[0]);
+            makeMove(&board[0], lastMove, currentPlayer);
+            currentPlayer = CROSSES;
+        } else {
+            int lastMove = getAIPlayerMove(&board[0]);
+            makeMove(&board[0], lastMove, currentPlayer);
+            currentPlayer = NOUGHTS;
+        }
+        drawBoard(&board[0]);
+
+        // if three in a row exists, it's game over
+
+        // if there are no more moves, there's a draw
+        if (!hasEmptySquare(board)) {
+            printf("Game over!\n");
+            gameOver = 1;
+            printf("It's a draw.\n");
+        }
+
+    }
 }
 
 int main() {
