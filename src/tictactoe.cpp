@@ -120,11 +120,42 @@ int getHumanPlayerMove(const int *board) {
     return gameAreaIndices[direction];
 }
 
-int getAIPlayerMove(const int *board) {
+int attemptWinningMove(int *board, const int currentPlayer) {
+    // checks if next move can win the game
+
+    int direction = 1;
+    int isWinningMoveFound = 0;
+
+    for (int i = 0; i < 9; i++) {
+        if (board[gameAreaIndices[i]] == EMPTY) {
+            direction = gameAreaIndices[i];
+            board[direction] = currentPlayer;
+
+            if (findThreeInARow(board, direction, currentPlayer) == 3) {
+                isWinningMoveFound = 1;
+            }
+
+            board[direction] = EMPTY;
+            if (isWinningMoveFound == 1) {
+                break;
+            }
+            direction = -1;
+        }
+    }
+    return direction;
+}
+
+int getAIPlayerMove(int *board, const int currentPlayer) {
     int freeSquareIdx = 0;
     int availableDirections[9];
     int randDirection = 0;
 
+    randDirection = attemptWinningMove(board, currentPlayer);
+    if (randDirection != -1) {
+        return randDirection;
+    }
+
+    randDirection = 0;
     for (int i = 0; i < 9; i++) {
         if (board[gameAreaIndices[i]] == EMPTY) {
             availableDirections[freeSquareIdx++] = gameAreaIndices[i];
@@ -161,7 +192,7 @@ void run() {
             makeMove(&board[0], lastMove, currentPlayerSymbol);
             currentPlayerSymbol = CROSSES;
         } else {
-            lastMove = getAIPlayerMove(&board[0]);
+            lastMove = getAIPlayerMove(&board[0], currentPlayerSymbol);
             makeMove(&board[0], lastMove, currentPlayerSymbol);
             currentPlayerSymbol = NOUGHTS;
             drawBoard(&board[0]);
