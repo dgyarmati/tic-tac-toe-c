@@ -5,6 +5,7 @@
 
 // TODO: direction the player can choose should be called squareNumber or similar
 // TODO: bugfix - draw is displayed even if there's a win
+// TODO: bugfix - the game goes on for one round sometimes even if there's a row of three
 // TODO: lastMove should be called gameAreIdxToMove or similar
 
 // human side uses noughts, comp side uses crosses
@@ -19,6 +20,9 @@ const int gameAreaIndices[9] = {
     11, 12, 13, 
     16, 17, 18
 };
+
+const int middleIdxInGameArea = 4;
+const int cornerIndices[4] = {0, 2, 6, 8};
 
 int getNoOfSameSymbolsInADirection(int startSquareIdx, const int direction, const int *board, const int currentSymbol) {
     int noOfSameSymbolsInARow = 0;
@@ -120,6 +124,28 @@ int getHumanPlayerMove(const int *board) {
     return gameAreaIndices[direction];
 }
 
+int findNextBestMove(const int *board) {
+    int direction = gameAreaIndices[middleIdxInGameArea];
+
+    // check if middle of the board is available
+    if (board[direction] == EMPTY) {
+        return direction;
+    }
+
+    direction = -1;
+
+    // check if the corners are available
+    for (int i = 0; i < 4; i++) {
+        direction = gameAreaIndices[cornerIndices[i]];
+        if (board[direction] == EMPTY) {
+            break;
+        }
+        direction = -1;
+    }
+
+    return direction;
+}
+
 int attemptWinningMove(int *board, const int currentPlayer) {
     // checks if next move can win the game
 
@@ -151,6 +177,17 @@ int getAIPlayerMove(int *board, const int currentPlayer) {
     int randDirection = 0;
 
     randDirection = attemptWinningMove(board, currentPlayer);
+    if (randDirection != -1) {
+        return randDirection;
+    }
+
+    // find winning move for opponent, and attempt to block it
+    randDirection = attemptWinningMove(board, currentPlayer ^ 1);
+    if (randDirection != -1) {
+        return randDirection;
+    }
+
+    randDirection = findNextBestMove(board);
     if (randDirection != -1) {
         return randDirection;
     }
