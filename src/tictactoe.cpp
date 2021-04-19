@@ -3,6 +3,10 @@
 #include <string.h>
 #include <ctime>
 
+// TODO: direction the player can choose should be called squareNumber or similar
+// TODO: bugfix - draw is displayed even if there's a win
+// TODO: lastMove should be called gameAreIdxToMove or similar
+
 // human side uses noughts, comp side uses crosses
 enum { NOUGHTS, CROSSES, BORDER, EMPTY };
 enum { HUMANWIN, COMPWIN, DRAW };
@@ -153,15 +157,15 @@ void run() {
 
     while (!gameOver) {
         if (currentPlayerSymbol == NOUGHTS) {
-            int lastMove = getHumanPlayerMove(&board[0]);
+            lastMove = getHumanPlayerMove(&board[0]);
             makeMove(&board[0], lastMove, currentPlayerSymbol);
             currentPlayerSymbol = CROSSES;
         } else {
-            int lastMove = getAIPlayerMove(&board[0]);
+            lastMove = getAIPlayerMove(&board[0]);
             makeMove(&board[0], lastMove, currentPlayerSymbol);
             currentPlayerSymbol = NOUGHTS;
+            drawBoard(&board[0]);
         }
-        drawBoard(&board[0]);
 
         int oppositePlayerSymbol = currentPlayerSymbol ^ 1;
         if (findThreeInARow(board, lastMove, oppositePlayerSymbol) == 3) {
