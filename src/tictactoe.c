@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctime>
 
 // TODO: direction the player can choose should be called squareNumber or similar
 // TODO: bugfix - draw is displayed even if there's a win
@@ -10,7 +9,6 @@
 
 // human side uses noughts, comp side uses crosses
 enum { NOUGHTS, CROSSES, BORDER, EMPTY };
-enum { HUMANWIN, COMPWIN, DRAW };
 
 // directions to search for three in a rows
 const int directions[4] = {1, 5, 4, 6};
@@ -258,7 +256,6 @@ void run() {
 }
 
 int main() {
-    srand(time(NULL));
     run();
 }
  
